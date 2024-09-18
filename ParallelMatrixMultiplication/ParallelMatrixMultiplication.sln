@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelMatrixMultiplication", "ParallelMatrixMultiplication.csproj", "{82EBC1D5-918B-479F-9B05-A6B713D448B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParallelMatrixMultiplication.tests", "..\ParallelMatrixMultiplication.tests\ParallelMatrixMultiplication.tests.csproj", "{B8F7D789-6190-42F9-B002-67CC7B1EF069}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82EBC1D5-918B-479F-9B05-A6B713D448B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82EBC1D5-918B-479F-9B05-A6B713D448B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82EBC1D5-918B-479F-9B05-A6B713D448B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82EBC1D5-918B-479F-9B05-A6B713D448B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8F7D789-6190-42F9-B002-67CC7B1EF069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8F7D789-6190-42F9-B002-67CC7B1EF069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8F7D789-6190-42F9-B002-67CC7B1EF069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8F7D789-6190-42F9-B002-67CC7B1EF069}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
