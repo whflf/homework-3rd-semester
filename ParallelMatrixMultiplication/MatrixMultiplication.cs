@@ -1,7 +1,21 @@
+// <copyright file="MatrixMultiplication.cs" company="Elena Makarova">
+// Copyright (c) Elena Makarova. All rights reserved.
+// </copyright>
+
 namespace ParallelMatrixMultiplication;
 
+/// <summary>
+/// Provides methods for multiplying matrices, both sequentially and in parallel.
+/// </summary>
 public static class MatrixMultiplication
 {
+    /// <summary>
+    /// Multiplies two matrices sequentially.
+    /// </summary>
+    /// <param name="firstMatrix">The first matrix to multiply.</param>
+    /// <param name="secondMatrix">The second matrix to multiply.</param>
+    /// <returns>A two-dimensional array representing the product of the two matrices.</returns>
+    /// <exception cref="ArgumentException">Thrown when the number of columns in the first matrix does not match the number of rows in the second matrix.</exception>
     public static int[,] MultiplySequential(int[,] firstMatrix, int[,] secondMatrix)
     {
         var firstMatrixRows = firstMatrix.GetLength(0);
@@ -11,6 +25,13 @@ public static class MatrixMultiplication
         return product;
     }
 
+    /// <summary>
+    /// Multiplies two matrices in parallel.
+    /// </summary>
+    /// <param name="firstMatrix">The first matrix to multiply.</param>
+    /// <param name="secondMatrix">The second matrix to multiply.</param>
+    /// <returns>A two-dimensional array representing the product of the two matrices.</returns>
+    /// <exception cref="ArgumentException">Thrown when the number of columns in the first matrix does not match the number of rows in the second matrix.</exception>
     public static int[,] MultiplyParallel(int[,] firstMatrix, int[,] secondMatrix)
     {
         var firstMatrixRows = firstMatrix.GetLength(0);
