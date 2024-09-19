@@ -1,0 +1,15 @@
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/bin/Debug/net8.0/ParallelMatrixMultiplication
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/bin/Debug/net8.0/ParallelMatrixMultiplication.deps.json
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/bin/Debug/net8.0/ParallelMatrixMultiplication.runtimeconfig.json
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/bin/Debug/net8.0/ParallelMatrixMultiplication.dll
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/bin/Debug/net8.0/ParallelMatrixMultiplication.pdb
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.GeneratedMSBuildEditorConfig.editorconfig
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.AssemblyInfoInputs.cache
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.AssemblyInfo.cs
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.csproj.CoreCompileInputs.cache
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.sourcelink.json
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.dll
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/refint/ParallelMatrixMultiplication.dll
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.pdb
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ParallelMatrixMultiplication.genruntimeconfig.cache
+/home/eleno/homework-3rd-semester/ParallelMatrixMultiplication/obj/Debug/net8.0/ref/ParallelMatrixMultiplication.dll
