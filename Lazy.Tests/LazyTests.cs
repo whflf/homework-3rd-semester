@@ -63,7 +63,7 @@ public class LazyTests
         var threads = new Thread[100];
         for (var i = 0; i < 100; ++i)
         {
-            threads[i] = new Thread(() => result += lazy.Get());
+            threads[i] = new Thread(() => Interlocked.Add(ref result, lazy.Get()));
         }
 
         foreach (var thread in threads)
