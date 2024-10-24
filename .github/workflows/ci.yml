@@ -11,7 +11,13 @@ jobs:
       - name: Build
         run: for f in $(find -name "*.sln"); do dotnet build $f; done
       - name: Run tests
-        run: for f in $(find -name "*.sln"); do dotnet test $f; done
+        run: |
+          for f in $(find -name "*.sln"); do
+            if [[ "$f" == *"SimpleFTP/SimpleFTP.sln"* ]]; then
+              dotnet run --project SimpleFTP/SimpleFTP.csproj
+            fi
+            dotnet test $f
+          done
   build-Windows:
     runs-on: windows-latest
     steps:
@@ -25,3 +31,4 @@ jobs:
       - name: Run tests
         shell: cmd
         run: For /R %%I in (*.sln) do dotnet test %%I
+
