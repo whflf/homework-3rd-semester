@@ -13,11 +13,16 @@ jobs:
       - name: Run tests
         run: |
           for f in $(find -name "*.sln"); do
-            if [[ "$f" == *"SimpleFTP/SimpleFTP.sln"* ]]; then
-              dotnet run --project SimpleFTP/SimpleFTP.csproj
-            fi
-            dotnet test $f
+              if [[ "$f" == *"SimpleFTP/SimpleFTP.sln"* ]]; then
+                  dotnet run --project SimpleFTP/SimpleFTP.csproj &
+                  SERVER_PID=$! # Сохраняем PID сервера
+              fi
+              dotnet test $f # Запускаем тесты
           done
+
+          if [[ -n "$SERVER_PID" ]]; then
+              kill -9 $SERVER_PID
+          fi
   build-Windows:
     runs-on: windows-latest
     steps:
