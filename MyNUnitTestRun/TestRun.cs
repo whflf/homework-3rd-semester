@@ -11,6 +11,8 @@ public static class TestRun
         var assemblyNames = Directory.EnumerateFiles(directory, "*.dll", SearchOption.AllDirectories);
         var assemblies = new List<Assembly>();
 
+        var loadedAssemblies = new List<string?>();
+
         foreach (var assemblyName in assemblyNames)
         {
             try
@@ -25,6 +27,15 @@ public static class TestRun
 
         foreach (var assembly in assemblies)
         {
+            if (loadedAssemblies.Contains(assembly.FullName))
+            {
+                continue;
+            }
+            else
+            {
+                loadedAssemblies.Add(assembly.FullName);
+            }
+
             Console.WriteLine(assembly.FullName + ":");
 
             var testClasses = assembly.GetTypes().Where(t => t.IsClass && t.GetCustomAttributes<TestClassAttribute>().Any());
