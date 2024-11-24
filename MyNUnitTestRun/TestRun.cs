@@ -126,7 +126,7 @@ public static class TestRun
                     Console.WriteLine($"    Test {testMethod.Name} in class {testClass.Name} passed.\n" +
                         $"        {stopwatch.ElapsedMilliseconds} ms");
                 }
-                else if (returnType == typeof(bool?) && (bool?)result == false)
+                else if (returnType == typeof(bool) && (bool?)result is false)
                 {
                     Console.WriteLine($"    Test {testMethod.Name} in class {testClass.Name} failed.\n" +
                         $"        {stopwatch.ElapsedMilliseconds} ms");

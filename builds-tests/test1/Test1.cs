@@ -18,7 +18,7 @@ public class Test1
     }
 
     [Before]
-    public void BeforePrint() 
+    public void BeforePrint()
     {
         Console.WriteLine("     ~ Test beginning ~");
     }

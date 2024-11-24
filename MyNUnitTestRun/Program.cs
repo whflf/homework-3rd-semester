@@ -1,5 +1,5 @@
 ﻿using MyNUnitTestRun;
 
-var directory = args[0];
+var directory = "../../../../builds-tests";
 
 TestRun.RunTests(directory);
