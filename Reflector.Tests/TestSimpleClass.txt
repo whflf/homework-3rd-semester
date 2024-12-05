@@ -1,0 +1,8 @@
+internal class SimpleClass
+{
+    public Char character;
+    public Int32 number;
+    private static String name;
+    public static Void PrintName();
+    private Int32 ReturnInt(Boolean value);
+}
