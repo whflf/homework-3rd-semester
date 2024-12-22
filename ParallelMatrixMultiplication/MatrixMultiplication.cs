@@ -18,11 +18,7 @@ public static class MatrixMultiplication
     /// <exception cref="ArgumentException">Thrown when the number of columns in the first matrix does not match the number of rows in the second matrix.</exception>
     public static int[,] MultiplySequential(int[,] firstMatrix, int[,] secondMatrix)
     {
-        var firstMatrixRows = firstMatrix.GetLength(0);
-        var product = new int[firstMatrixRows, secondMatrix.GetLength(1)];
-        Multiply((firstMatrix, secondMatrix, product, 0, firstMatrixRows));
-
-        return product;
+        return Multiply(firstMatrix, secondMatrix, 0, firstMatrix.GetLength(0));
     }
 
     /// <summary>
@@ -35,19 +31,36 @@ public static class MatrixMultiplication
     public static int[,] MultiplyParallel(int[,] firstMatrix, int[,] secondMatrix)
     {
         var firstMatrixRows = firstMatrix.GetLength(0);
-        var secondMatrixColumns = secondMatrix.GetLength(1);
-        var product = new int[firstMatrixRows, secondMatrixColumns];
-        var threads = new Thread[firstMatrixRows];
-
-        for (var i = 0; i < threads.Length; ++i)
+        if (firstMatrixRows < Environment.ProcessorCount)
         {
-            threads[i] = new Thread(new ParameterizedThreadStart(Multiply));
+            return MultiplySequential(firstMatrix, secondMatrix);
         }
 
+        var secondMatrixColumns = secondMatrix.GetLength(1);
+        var result = new int[firstMatrixRows, secondMatrixColumns];
+        var threads = new Thread[Environment.ProcessorCount];
+        var rowsPerThread = firstMatrixRows / threads.Length;
+        var partialResults = new int[threads.Length][,];
+
         for (var i = 0; i < threads.Length; ++i)
         {
-            var localI = i;
-            threads[i].Start((firstMatrix, secondMatrix, product, localI, localI + 1));
+            var threadIndex = i;
+            var startRow = threadIndex * rowsPerThread;
+            var endRow = (threadIndex == threads.Length - 1) ? firstMatrixRows : startRow + rowsPerThread;
+
+            threads[threadIndex] = new Thread(() =>
+            {
+                partialResults[threadIndex] = Multiply(firstMatrix, secondMatrix, startRow, endRow);
+
+                for (var j = 0; j < partialResults[threadIndex].GetLength(0); ++j)
+                {
+                    for (var k = 0; k < secondMatrixColumns; ++k)
+                    {
+                        result[(threadIndex * rowsPerThread) + j, k] = partialResults[threadIndex][j, k];
+                    }
+                }
+            });
+            threads[threadIndex].Start();
         }
 
         foreach (var thread in threads)
@@ -55,19 +68,31 @@ public static class MatrixMultiplication
             thread.Join();
         }
 
-        return product;
+        return result;
     }
 
-    private static void Multiply(object? data)
+    private static int[,] Multiply(int[,] firstMatrix, int[,] secondMatrix, int rowStart, int rowEnd)
     {
-        ArgumentNullException.ThrowIfNull(data);
-
-        var (firstMatrix, secondMatrix, productMatrix, rowStart, rowEnd) = 
-            ((int[,], int[,], int[,], int, int))data;
-
+        var firstMatrixRows = firstMatrix.GetLength(0);
         var firstMatrixColumns = firstMatrix.GetLength(1);
         var secondMatrixRows = secondMatrix.GetLength(0);
         var secondMatrixColumns = secondMatrix.GetLength(1);
+
+        if ((firstMatrixRows == 0 && firstMatrixColumns == 0) || (secondMatrixRows == 0 && secondMatrixColumns == 0))
+        {
+            throw new ArgumentException("Multiplier cannot be an empty matrix.");
+        }
+
+        var productMatrix = new int[rowEnd - rowStart, secondMatrixColumns];
+
+        if (firstMatrixRows == 1 && firstMatrixColumns == 1)
+        {
+            return MultiplyMatrixByNumber(secondMatrix, firstMatrix[0, 0]);
+        }
+        else if (secondMatrixRows == 1 && secondMatrixColumns == 1)
+        {
+            return MultiplyMatrixByNumber(firstMatrix, secondMatrix[0, 0]);
+        }
 
         if (firstMatrixColumns != secondMatrixRows)
         {
@@ -89,9 +114,25 @@ public static class MatrixMultiplication
             {
                 for (var k = 0; k < firstMatrixColumns; ++k)
                 {
-                    productMatrix[i, j] += firstMatrix[i, k] * transposedSecondMatrix[j, k];
+                    productMatrix[i - rowStart, j] += firstMatrix[i, k] * transposedSecondMatrix[j, k];
                 }
             }
         }
+
+        return productMatrix;
+    }
+
+    private static int[,] MultiplyMatrixByNumber(int[,] matrix, int number)
+    {
+        var result = new int[matrix.GetLength(0), matrix.GetLength(1)];
+        for (var i = 0; i < matrix.GetLength(0); ++i)
+        {
+            for (var j = 0; j < matrix.GetLength(1); ++j)
+            {
+                result[i, j] = matrix[i, j] * number;
+            }
+        }
+
+        return result;
     }
 }
