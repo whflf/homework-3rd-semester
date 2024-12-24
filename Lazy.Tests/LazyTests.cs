@@ -25,10 +25,11 @@ public class LazyTests
     /// </summary>
     /// <param name="lazy">An instance of <see cref="ILazy{int}"/> to test.</param>
     [TestCaseSource(nameof(LazyObjects_SupplierCalledOnce))]
-    public void BothImplementations_SupplierCalledOnce(ILazy<int> lazy)
+    public void BothImplementations_SupplierCalledOnce(ILazy<object> lazy)
     {
-        lazy.Get();
-        Assert.That(lazy.Get(), Is.EqualTo(0));
+        var result1 = lazy.Get();
+        var result2 = lazy.Get();
+        Assert.That(result1 == result2, Is.True);
     }
 
     /// <summary>
@@ -86,10 +87,12 @@ public class LazyTests
     public void Multithread_SupplierIsSlowButCalledOnce()
     {
         var callCount = 0;
+
+        var startEvent = new ManualResetEvent(false);
         var lazy = new LazyMultithread<int>(() =>
         {
-            Thread.Sleep(500);
-            ++callCount;
+            startEvent.WaitOne();
+            Interlocked.Increment(ref callCount);
             return 42;
         });
 
@@ -97,12 +100,10 @@ public class LazyTests
         for (var i = 0; i < 10; ++i)
         {
             threads[i] = new Thread(() => lazy.Get());
+            threads[i].Start();
         }
 
-        foreach (var thread in threads)
-        {
-            thread.Start();
-        }
+        startEvent.Set();
 
         foreach (var thread in threads)
         {
@@ -123,13 +124,9 @@ public class LazyTests
         return GetLazyObjects<int>(() => 42);
     }
 
-    private static IEnumerable<ILazy<int>> LazyObjects_SupplierCalledOnce()
+    private static IEnumerable<ILazy<object>> LazyObjects_SupplierCalledOnce()
     {
-        return GetLazyObjects<int>(() =>
-        {
-            var count = 0;
-            return count++;
-        });
+        return GetLazyObjects<object>(() => new object());
     }
 
     private static IEnumerable<ILazy<object?>> LazyObjects_SupplierReturnsNull()

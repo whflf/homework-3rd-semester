@@ -2,6 +2,9 @@
 // Copyright (c) Elena Makarova. All rights reserved.
 // </copyright>
 
+#pragma warning disable SA1009
+#pragma warning disable SA1309
+
 namespace Lazy;
 
 /// <summary>
@@ -10,7 +13,7 @@ namespace Lazy;
 /// <typeparam name="T">The type of the value to be lazily initialized.</typeparam>
 public class LazySingleThread<T>(Func<T> supplier) : ILazy<T>
 {
-    private readonly Func<T> Supplier = supplier;
+    private Func<T>? supplier = supplier;
     private T? _value;
     private bool _valueIsCalculated = false;
 
@@ -23,8 +26,9 @@ public class LazySingleThread<T>(Func<T> supplier) : ILazy<T>
     {
         if (!this._valueIsCalculated)
         {
-            this._value = this.Supplier();
+            this._value = this.supplier();
             this._valueIsCalculated = true;
+            this.supplier = null;
         }
 
         return this._value;
