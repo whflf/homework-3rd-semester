@@ -26,7 +26,11 @@ public class LazySingleThread<T>(Func<T> supplier) : ILazy<T>
     {
         if (!this._valueIsCalculated)
         {
-            this._value = this.supplier();
+            if (this.supplier is not null)
+            {
+                this._value = this.supplier();
+            }
+
             this._valueIsCalculated = true;
             this.supplier = null;
         }
