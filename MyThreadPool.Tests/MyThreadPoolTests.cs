@@ -130,6 +130,10 @@ public class MyThreadPoolTests
         threadPool.Shutdown();
     }
 
+    /// <summary>
+    /// Tests the concurrency behavior of submitting tasks to a thread pool while shutting it down.
+    /// Verifies that tasks can still complete successfully after shutdown is initiated in a separate thread.
+    /// </summary>
     [Test]
     public void Test_SubmitAndShutdownConcurrency()
     {
@@ -161,6 +165,10 @@ public class MyThreadPoolTests
         Assert.That(shutdownCompleted, Is.True);
     }
 
+    /// <summary>
+    /// Tests the behavior of chaining multiple continuations using <see cref="IMyTask{T}.ContinueWith"/>.
+    /// Verifies that the result of each continuation is correct based on the result of the base task.
+    /// </summary>
     [Test]
     public void Test_MultipleContinueWith()
     {
@@ -179,6 +187,11 @@ public class MyThreadPoolTests
         threadPool.Shutdown();
     }
 
+    /// <summary>
+    /// Tests that a continuation task does not block if the base task has not yet completed.
+    /// Verifies that the continuation task can complete successfully after the base task completes, 
+    /// even if a synchronization barrier is used to delay the base task's result.
+    /// </summary>
     [Test]
     public void Test_ContinueWithDoesNotBlockIfBaseTaskNotComputed()
     {
