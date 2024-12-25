@@ -10,7 +10,7 @@ public class MyThreadPool
     private readonly Queue<Action> _taskQueue = new Queue<Action>();
     private readonly CancellationTokenSource _source = new CancellationTokenSource();
     private readonly CancellationToken _token;
-    private readonly object _lock = new object();
+    private readonly object _lockObject = new object();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MyThreadPool"/> class
@@ -43,17 +43,15 @@ public class MyThreadPool
     /// </exception>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> calculation)
     {
-        if (this._token.IsCancellationRequested)
-        {
-            throw new InvalidOperationException("ThreadPool is shutting down, cannot accept new tasks.");
-        }
+        this._token.ThrowIfCancellationRequested();
 
-        var task = new MyTask<TResult>(calculation);
-
-        lock (this._lock)
+        MyTask<TResult> task;
+        lock (this._lockObject)
         {
+            task = new MyTask<TResult>(calculation, this._token);
+
             this._taskQueue.Enqueue(task.Run);
-            Monitor.Pulse(this._lock);
+            Monitor.Pulse(this._lockObject);
         }
 
         return task;
@@ -65,10 +63,10 @@ public class MyThreadPool
     /// </summary>
     public void Shutdown()
     {
-        lock (this._lock)
+        lock (this._lockObject)
         {
             this._source.Cancel();
-            Monitor.PulseAll(this._lock);
+            Monitor.PulseAll(this._lockObject);
         }
 
         foreach (var thread in this._threads)
@@ -79,15 +77,15 @@ public class MyThreadPool
 
     private void Work()
     {
-        while (true)
+        while (!this._token.IsCancellationRequested)
         {
             Action? task = null;
 
-            lock (this._lock)
+            lock (this._lockObject)
             {
                 while (!this._token.IsCancellationRequested && this._taskQueue.Count == 0)
                 {
-                    Monitor.Wait(this._lock);
+                    Monitor.Wait(this._lockObject);
                 }
 
                 if (this._token.IsCancellationRequested && this._taskQueue.Count == 0)
@@ -100,6 +98,121 @@ public class MyThreadPool
             }
 
             task();
+        }
+    }
+
+    private class MyTask<TResult>(Func<TResult> calculation) : IMyTask<TResult>
+    {
+        private readonly MyThreadPool? _pool;
+        private readonly CancellationToken _token;
+        private readonly object _lockObject = new object();
+        private readonly Func<TResult> _calculation = calculation ?? throw new ArgumentNullException(nameof(calculation));
+
+        private TResult? _result;
+        private Exception? _exception;
+        private Queue<Action> _continuations = new Queue<Action>();
+
+        public bool IsCompleted { get; private set; }
+
+        public MyTask(Func<TResult> calculation, MyThreadPool pool) : this(calculation)
+        {
+            this._pool = pool;
+        }
+
+        public MyTask(Func<TResult> calculation, CancellationToken token) : this(calculation)
+        {
+            this._token = token;
+        }
+
+        public TResult? Result
+        {
+            get
+            {
+                if (this.IsCompleted)
+                {
+                    return this._result;
+                }
+
+                lock (this._lockObject)
+                {
+                    if (!this.IsCompleted)
+                    {
+                        Monitor.Wait(_lockObject);
+                    }
+
+                    if (this._exception is not null)
+                    {
+                        throw new AggregateException(this._exception);
+                    }
+
+                    return this._result;
+                }
+            }
+        }
+
+        public void Run()
+        {
+            try
+            {
+                this._result = this._calculation();
+            }
+            catch (Exception ex)
+            {
+                this._exception = ex;
+            }
+            finally
+            {
+                lock (this._lockObject)
+                {
+                    this.IsCompleted = true;
+                    Monitor.PulseAll(this._lockObject);
+
+                    while (this._continuations.Count > 0)
+                    {
+                        var continuation = this._continuations.Dequeue();
+                        continuation();
+                    }
+                }
+            }
+        }
+
+        public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> continuation)
+        {
+            this._token.ThrowIfCancellationRequested();
+
+            MyTask<TNewResult> newTask;
+
+            lock (this._lockObject)
+            {
+                var newCalculation = () => continuation(this.Result!);
+                newTask = new MyTask<TNewResult>(newCalculation, this._token);
+
+                if (this.IsCompleted)
+                {
+                    this.RunContinuation(newCalculation, newTask);
+                }
+                else
+                {
+                    this._continuations.Enqueue(() =>
+                    {
+                        this.RunContinuation(newCalculation, newTask);
+                    });
+                }
+            }
+
+            return newTask;
+        }
+
+        private void RunContinuation<TNewResult>(Func<TNewResult> continuationFunction, MyTask<TNewResult> continuationTask)
+        {
+            if (this._pool is not null)
+            {
+                this._pool.Submit(continuationFunction);
+            }
+            else
+            {
+                continuationTask.Run();
+            }
         }
     }
 }
