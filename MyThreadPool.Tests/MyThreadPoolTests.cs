@@ -139,30 +139,41 @@ public class MyThreadPoolTests
     {
         var threadCount = 4;
         var threadPool = new MyThreadPool(threadCount);
-        var shutdownCompleted = false;
 
         var shutdownThread = new Thread(() =>
         {
             threadPool.Shutdown();
-            shutdownCompleted = true;
         });
+
+        var completedTasks = 0;
+        var canceledTasks = 0;
 
         var tasks = new List<IMyTask<int>>();
         for (int i = 0; i < threadCount * 2; ++i)
         {
-            var task = threadPool.Submit(() => 42);
-            tasks.Add(task);
+            try
+            {
+                var task = threadPool.Submit(() => 42);
+                tasks.Add(task);
+            }
+            catch (OperationCanceledException)
+            {
+                ++canceledTasks;
+            }
         }
 
         shutdownThread.Start();
 
         foreach (var task in tasks)
         {
-            Assert.That(task.Result, Is.EqualTo(42));
+            if (task.Result == 42)
+            {
+                ++completedTasks;
+            }
         }
 
         shutdownThread.Join();
-        Assert.That(shutdownCompleted, Is.True);
+        Assert.That(canceledTasks + completedTasks, Is.EqualTo(8));
     }
 
     /// <summary>

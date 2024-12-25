@@ -77,7 +77,7 @@ public class MyThreadPool
 
     private void Work()
     {
-        while (!this._token.IsCancellationRequested)
+        while (!this._token.IsCancellationRequested || this._taskQueue.Count != 0)
         {
             Action? task = null;
 
