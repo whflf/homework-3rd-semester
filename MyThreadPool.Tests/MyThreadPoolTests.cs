@@ -1,3 +1,7 @@
+// <copyright file="MyThreadPoolTests.cs" company="Elena Makarova">
+// Copyright (c) Elena Makarova. All rights reserved.
+// </copyright>
+
 namespace MyThreadPool.Tests;
 
 /// <summary>
@@ -103,7 +107,7 @@ public class MyThreadPoolTests
         var extraTask = threadPool.Submit(() => 42);
         Assert.That(extraTask.IsCompleted, Is.False);
 
-        barrier.RemoveParticipant(); 
+        barrier.RemoveParticipant();
 
         foreach (var task in tasks)
         {
@@ -117,7 +121,7 @@ public class MyThreadPoolTests
     [Test]
     public void Test_TaskQueueExecutesWhenThreadIsFree()
     {
-        MyThreadPool threadPool = new MyThreadPool(2);
+        var threadPool = new MyThreadPool(2);
 
         var task1 = threadPool.Submit(() => 5);
         var task2 = threadPool.Submit(() => 10);
@@ -200,7 +204,7 @@ public class MyThreadPoolTests
 
     /// <summary>
     /// Tests that a continuation task does not block if the base task has not yet completed.
-    /// Verifies that the continuation task can complete successfully after the base task completes, 
+    /// Verifies that the continuation task can complete successfully after the base task completes,
     /// even if a synchronization barrier is used to delay the base task's result.
     /// </summary>
     [Test]

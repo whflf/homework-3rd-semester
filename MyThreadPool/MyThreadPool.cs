@@ -1,4 +1,11 @@
-﻿namespace MyThreadPool;
+﻿// <copyright file="MyThreadPool.cs" company="Elena Makarova">
+// Copyright (c) Elena Makarova. All rights reserved.
+// </copyright>
+
+#pragma warning disable SA1309
+#pragma warning disable SA1009
+
+namespace MyThreadPool;
 
 /// <summary>
 /// Represents a custom thread pool that manages a set of worker threads
@@ -19,12 +26,17 @@ public class MyThreadPool
     /// <param name="threadCount">The number of threads in the pool.</param>
     public MyThreadPool(int threadCount)
     {
+        if (threadCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(threadCount), "Thread count must be greater than zero.");
+        }
+
         this._token = this._source.Token;
         this._threads = new Thread[threadCount];
 
         for (var i = 0; i < threadCount; ++i)
         {
-            this._threads[i] = new Thread(Work);
+            this._threads[i] = new Thread(this.Work);
             this._threads[i].Start();
         }
     }
@@ -35,7 +47,7 @@ public class MyThreadPool
     /// <typeparam name="TResult">The type of the result returned by the task.</typeparam>
     /// <param name="calculation">A delegate representing the task to be executed.</param>
     /// <returns>
-    /// An <see cref="IMyTask{TResult}"/> that represents the asynchronous task 
+    /// An <see cref="IMyTask{TResult}"/> that represents the asynchronous task
     /// and contains the result or exception information once completed.
     /// </returns>
     /// <exception cref="InvalidOperationException">
@@ -43,11 +55,10 @@ public class MyThreadPool
     /// </exception>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> calculation)
     {
-        this._token.ThrowIfCancellationRequested();
-
         MyTask<TResult> task;
         lock (this._lockObject)
         {
+            this._token.ThrowIfCancellationRequested();
             task = new MyTask<TResult>(calculation, this._token);
 
             this._taskQueue.Enqueue(task.Run);
@@ -58,7 +69,7 @@ public class MyThreadPool
     }
 
     /// <summary>
-    /// Shuts down the thread pool, preventing further task submissions and waiting 
+    /// Shuts down the thread pool, preventing further task submissions and waiting
     /// for all current tasks to complete before terminating the worker threads.
     /// </summary>
     public void Shutdown()
@@ -110,19 +121,21 @@ public class MyThreadPool
 
         private TResult? _result;
         private Exception? _exception;
-        private Queue<Action> _continuations = new Queue<Action>();
+        private Queue<Action> _continuations = new ();
 
-        public bool IsCompleted { get; private set; }
-
-        public MyTask(Func<TResult> calculation, MyThreadPool pool) : this(calculation)
+        public MyTask(Func<TResult> calculation, MyThreadPool pool)
+            : this(calculation)
         {
             this._pool = pool;
         }
 
-        public MyTask(Func<TResult> calculation, CancellationToken token) : this(calculation)
+        public MyTask(Func<TResult> calculation, CancellationToken token)
+    : this(calculation)
         {
             this._token = token;
         }
+
+        public bool IsCompleted { get; private set; }
 
         public TResult? Result
         {
@@ -130,6 +143,11 @@ public class MyThreadPool
             {
                 if (this.IsCompleted)
                 {
+                    if (this._exception is not null)
+                    {
+                        throw new AggregateException(this._exception);
+                    }
+
                     return this._result;
                 }
 
@@ -137,7 +155,7 @@ public class MyThreadPool
                 {
                     if (!this.IsCompleted)
                     {
-                        Monitor.Wait(_lockObject);
+                        Monitor.Wait(this._lockObject);
                     }
 
                     if (this._exception is not null)
@@ -207,7 +225,14 @@ public class MyThreadPool
         {
             if (this._pool is not null)
             {
-                this._pool.Submit(continuationFunction);
+                try
+                {
+                    this._pool.Submit(continuationFunction);
+                }
+                catch (Exception ex)
+                {
+                    continuationTask._exception = ex;
+                }
             }
             else
             {
