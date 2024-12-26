@@ -2,9 +2,6 @@
 // Copyright (c) Elena Makarova. All rights reserved.
 // </copyright>
 
-#pragma warning disable SA1009
-#pragma warning disable SA1309
-
 namespace Lazy;
 
 /// <summary>
